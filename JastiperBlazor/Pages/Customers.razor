@@ -1,0 +1,76 @@
+@page "/customers"
+@using JastiperBlazor.Services
+@using JastiperBlazor.Models
+@inject CustomerService CustomerService
+@inject NavigationManager Navigation
+
+<PageTitle>Customers</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Customers</MudText>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowAddDialog" StartIcon="@Icons.Material.Filled.Add">
+    Tambah Customer
+</MudButton>
+
+<MudTextField @bind-Value="_searchTerm" Label="Cari nama / WA" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-4" Immediate="true" />
+
+<MudTable Items="@_filteredCustomers" Hover="true" Dense="true" Class="mt-4">
+    <HeaderContent>
+        <MudTh>Nama</MudTh>
+        <MudTh>WhatsApp</MudTh>
+        <MudTh>Jumlah Order</MudTh>
+        <MudTh>Aksi</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>@context.WhatsAppNumber</MudTd>
+        <MudTd>@context.Orders.Count</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" OnClick="@(() => ViewCustomer(context.Id))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info" OnClick="@(() => EditCustomer(context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Customer> _customers = new();
+    private List<Customer> _filteredCustomers = new();
+    private string _searchTerm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
+    {
+        _customers = await CustomerService.GetAllAsync();
+        FilterCustomers();
+    }
+
+    private void FilterCustomers()
+    {
+        if (string.IsNullOrWhiteSpace(_searchTerm))
+            _filteredCustomers = _customers;
+        else
+            _filteredCustomers = _customers.Where(c =>
+                c.Name.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                c.WhatsAppNumber.Contains(_searchTerm)).ToList();
+    }
+
+    private void ShowAddDialog()
+    {
+        // Simple redirect to add page or dialog - for now navigate
+        Navigation.NavigateTo("/customers/add");
+    }
+
+    private void ViewCustomer(int id)
+    {
+        Navigation.NavigateTo($"/customers/{id}");
+    }
+
+    private void EditCustomer(Customer c)
+    {
+        Navigation.NavigateTo($"/customers/edit/{c.Id}");
+    }
+}

@@ -1,0 +1,87 @@
+@page "/orders"
+@using JastiperBlazor.Services
+@using JastiperBlazor.Models
+@inject OrderService OrderService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+
+<PageTitle>Orders</PageTitle>
+
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Daftar Order</MudText>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/orders/add"))" StartIcon="@Icons.Material.Filled.Add">
+    Order Baru
+</MudButton>
+
+<MudSelect T="OrderStatus?" @bind-Value="_filterStatus" Label="Filter Status" Class="mt-4" Clearable="true">
+    @foreach (var status in Enum.GetValues<OrderStatus>())
+    {
+        <MudSelectItem T="OrderStatus?" Value="@status">@status</MudSelectItem>
+    }
+</MudSelect>
+
+<MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden mt-4">
+<MudTable Items="@_filteredOrders" Hover="true" Dense="true">
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+        <MudTh>Tanggal</MudTh>
+        <MudTh>Customer</MudTh>
+        <MudTh>Total Jual</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Aksi</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Id</MudTd>
+        <MudTd>@context.OrderDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd>@context.Customer.Name</MudTd>
+        <MudTd>@context.TotalSellingPrice.ToString("N0")</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@context.Status</MudChip>
+        </MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" OnClick="@(() => ShowDetail(context.Id))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default" OnClick="@(() => Navigation.NavigateTo($"/orders/{context.Id}"))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+</MudPaper>
+
+@code {
+    private List<Order> _orders = new();
+    private List<Order> _filteredOrders = new();
+    private OrderStatus? _filterStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _orders = await OrderService.GetAllAsync();
+        Filter();
+    }
+
+    protected override void OnParametersSet()
+    {
+        Filter();
+    }
+
+    private void Filter()
+    {
+        _filteredOrders = _filterStatus.HasValue
+            ? _orders.Where(o => o.Status == _filterStatus).ToList()
+            : _orders;
+    }
+
+    private async Task ShowDetail(int orderId)
+    {
+        var parameters = new DialogParameters { ["OrderId"] = orderId };
+        await DialogService.ShowAsync<OrderDetailDialog>("Detail Order", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+    }
+
+    private Color GetStatusColor(OrderStatus status) => status switch
+    {
+        OrderStatus.PendingDP => Color.Warning,
+        OrderStatus.DPReceived => Color.Info,
+        OrderStatus.OrderedToSupplier => Color.Primary,
+        OrderStatus.Arrived => Color.Success,
+        OrderStatus.Cancelled => Color.Error,
+        _ => Color.Default
+    };
+}

@@ -1,0 +1,28 @@
+<MudDialog>
+    <DialogContent>
+        <MudPaper Elevation="0" Outlined="true" Class="rounded-lg pa-4">
+        <MudNumericField @bind-Value="_totalCost" Label="Total Biaya ke Supplier" Required="true" Min="0" Variant="Variant.Outlined" />
+        <MudDatePicker @bind-Date="_paymentDate" Label="Tanggal Pembayaran" Class="mt-3" Editable="true" Variant="Variant.Outlined" />
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Batal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Simpan</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int BatchId { get; set; }
+
+    private decimal _totalCost;
+    private DateTime? _paymentDate = DateTime.Today;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Save()
+    {
+        if (_paymentDate.HasValue)
+            MudDialog.Close(DialogResult.Ok((_totalCost, _paymentDate.Value)));
+    }
+}

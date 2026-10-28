@@ -1,0 +1,80 @@
+@page "/"
+@using JastiperBlazor.Services
+@using JastiperBlazor.Models
+@inject ReportService ReportService
+@inject OrderService OrderService
+
+<PageTitle>Dashboard - Jastiper</PageTitle>
+
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Dashboard</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudText Typo="Typo.subtitle2">Total Order</MudText>
+            <MudText Typo="Typo.h4">@_statusSummary.Values.Sum()</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudText Typo="Typo.subtitle2">Menunggu DP</MudText>
+            <MudText Typo="Typo.h4">@_statusSummary.GetValueOrDefault(OrderStatus.PendingDP)</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudText Typo="Typo.subtitle2">Sudah DP</MudText>
+            <MudText Typo="Typo.h4">@_statusSummary.GetValueOrDefault(OrderStatus.DPReceived)</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudText Typo="Typo.subtitle2">Sudah Sampai</MudText>
+            <MudText Typo="Typo.h4">@_statusSummary.GetValueOrDefault(OrderStatus.Arrived)</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudText Typo="Typo.h5" Class="mt-6 mb-3 font-weight-bold">Order Terbaru</MudText>
+<MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden">
+<MudTable Items="@_recentOrders" Hover="true" Dense="true">
+    <HeaderContent>
+        <MudTh>Tanggal</MudTh>
+        <MudTh>Customer</MudTh>
+        <MudTh>Total</MudTh>
+        <MudTh>Status</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.OrderDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd>@context.Customer.Name</MudTd>
+        <MudTd>@context.TotalSellingPrice.ToString("N0")</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@context.Status</MudChip>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+</MudPaper>
+
+@code {
+    private Dictionary<OrderStatus, int> _statusSummary = new();
+    private List<Order> _recentOrders = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _statusSummary = await ReportService.GetOrderStatusSummaryAsync();
+        var all = await OrderService.GetAllAsync();
+        _recentOrders = all.Take(10).ToList();
+    }
+
+    private Color GetStatusColor(OrderStatus status) => status switch
+    {
+        OrderStatus.PendingDP => Color.Warning,
+        OrderStatus.DPReceived => Color.Info,
+        OrderStatus.OrderedToSupplier => Color.Primary,
+        OrderStatus.Arrived => Color.Success,
+        OrderStatus.FullPaymentReceived => Color.Success,
+        OrderStatus.Shipped => Color.Success,
+        OrderStatus.Cancelled => Color.Error,
+        _ => Color.Default
+    };
+}

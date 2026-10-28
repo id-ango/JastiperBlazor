@@ -1,0 +1,49 @@
+@using JastiperBlazor.Models
+@using JastiperBlazor.Services
+@inject ProductService ProductService
+
+<MudDialog>
+    <DialogContent>
+        <MudAutocomplete T="string" @bind-Value="_item.ProductName" Label="Nama Produk" 
+                         SearchFunc="@SearchProducts" 
+                         Required="true"
+                         Clearable="true"
+                         CoerceText="true"
+                         CoerceValue="true" />
+        <MudNumericField @bind-Value="_item.Quantity" Label="Quantity" Min="1" Class="mt-3" />
+        <MudNumericField @bind-Value="_item.UnitSellingPrice" Label="Harga Jual per Unit" Min="0" Class="mt-3" />
+        <MudSelect T="string" @bind-Value="_item.SupplierCountry" Label="Supplier" Class="mt-3">
+            <MudSelectItem T="string" Value="@("Korea")">Korea</MudSelectItem>
+            <MudSelectItem T="string" Value="@("China")">China</MudSelectItem>
+            <MudSelectItem T="string" Value="@("Lainnya")">Lainnya</MudSelectItem>
+        </MudSelect>
+        <MudNumericField @bind-Value="_item.SupplierCost" Label="Biaya ke Supplier (opsional)" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Batal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Add">Tambah</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public EventCallback<OrderItem> OnAdd { get; set; }
+
+    private OrderItem _item = new() { Quantity = 1 };
+
+    private async Task<IEnumerable<string>> SearchProducts(string value)
+    {
+        return await ProductService.SearchProductNamesAsync(value ?? "");
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Add()
+    {
+        if (!string.IsNullOrWhiteSpace(_item.ProductName))
+        {
+            await OnAdd.InvokeAsync(_item);
+            MudDialog.Close(DialogResult.Ok(_item));
+        }
+    }
+}

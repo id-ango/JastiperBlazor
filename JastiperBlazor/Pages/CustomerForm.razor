@@ -1,0 +1,60 @@
+@page "/customers/add"
+@page "/customers/edit/{Id:int}"
+@using JastiperBlazor.Services
+@using JastiperBlazor.Models
+@inject CustomerService CustomerService
+@inject NavigationManager Navigation
+
+<PageTitle>@(Id == null ? "Tambah Customer" : "Edit Customer")</PageTitle>
+
+<MudText Typo="Typo.h4">@(Id == null ? "Tambah Customer" : "Edit Customer")</MudText>
+
+<MudForm @ref="_form" @bind-IsValid="@_success" Class="mt-4">
+    <MudTextField @bind-Value="_customer.Name" Label="Nama" Required="true" RequiredError="Nama wajib diisi" />
+    <MudTextField @bind-Value="_customer.WhatsAppNumber" Label="Nomor WhatsApp" Required="true" Class="mt-3" />
+    <MudTextField @bind-Value="_customer.Address" Label="Alamat (opsional)" Lines="2" Class="mt-3" />
+    <MudTextField @bind-Value="_customer.Notes" Label="Catatan" Lines="3" Class="mt-3" />
+</MudForm>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save" Class="mt-4" Disabled="@(!_success)">
+    Simpan
+</MudButton>
+<MudButton Variant="Variant.Outlined" OnClick="Cancel" Class="mt-4 ml-2">Batal</MudButton>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private Customer _customer = new();
+    private MudForm _form = null!;
+    private bool _success;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var existing = await CustomerService.GetByIdAsync(Id.Value);
+            if (existing != null)
+                _customer = existing;
+        }
+    }
+
+    private async Task Save()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            if (Id.HasValue)
+                await CustomerService.UpdateAsync(_customer);
+            else
+                await CustomerService.CreateAsync(_customer);
+
+            Navigation.NavigateTo("/customers");
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/customers");
+    }
+}

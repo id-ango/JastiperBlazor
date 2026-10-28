@@ -1,0 +1,78 @@
+@page "/supplier-items"
+@using JastiperBlazor.Models
+@using JastiperBlazor.Services
+@inject OrderService OrderService
+
+<PageTitle>Barang Dipesan Supplier</PageTitle>
+
+<div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-4">
+    <MudText Typo="Typo.h5" Class="font-weight-bold">Barang Dipesan Supplier</MudText>
+    <MudSelect T="string" @bind-Value="_batchFilter" Label="Filter Supplier Batch" Clearable="true" Variant="Variant.Outlined" Dense="true" Style="min-width:260px">
+        @foreach (var name in _batchNames)
+        {
+            <MudSelectItem T="string" Value="@name">@name</MudSelectItem>
+        }
+    </MudSelect>
+</div>
+
+<MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden">
+<MudTable Items="_filteredItems" Hover="true" Dense="true" Striped="false">
+    <HeaderContent>
+        <MudTh>Sudah Sampai</MudTh>
+        <MudTh>Tgl Sampai</MudTh>
+        <MudTh>Supplier Batch</MudTh>
+        <MudTh>Produk</MudTh>
+        <MudTh>Customer</MudTh>
+        <MudTh>Order #</MudTh>
+        <MudTh>Qty</MudTh>
+        <MudTh>Negara</MudTh>
+        <MudTh>Status Order</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <MudCheckBox T="bool" Value="context.ArrivedDate.HasValue" ValueChanged="@(v => ChangeArrivalAsync(context, v ? DateTime.Today : null))" />
+        </MudTd>
+        <MudTd>
+            <MudDatePicker Date="context.ArrivedDate" DateChanged="@(d => ChangeArrivalAsync(context, d))" Editable="true" Dense="true" Variant="Variant.Outlined" />
+        </MudTd>
+        <MudTd>@(context.Order.SupplierBatch?.Name ?? "-")</MudTd>
+        <MudTd>@context.ProductName</MudTd>
+        <MudTd>@context.Order.Customer.Name</MudTd>
+        <MudTd>#@context.OrderId</MudTd>
+        <MudTd>@context.Quantity</MudTd>
+        <MudTd>@context.SupplierCountry</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">@context.Order.Status</MudChip>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="pa-6">Belum ada barang yang dipesan ke supplier.</MudText>
+    </NoRecordsContent>
+</MudTable>
+</MudPaper>
+
+@code {
+    private List<OrderItem> _items = new();
+    private string? _batchFilter;
+
+    private IEnumerable<string> _batchNames => _items
+        .Select(i => i.Order.SupplierBatch?.Name ?? "-")
+        .Distinct()
+        .OrderBy(n => n);
+
+    private IEnumerable<OrderItem> _filteredItems => string.IsNullOrEmpty(_batchFilter)
+        ? _items.OrderBy(i => i.Order.SupplierBatch?.Name ?? "-")
+        : _items.Where(i => (i.Order.SupplierBatch?.Name ?? "-") == _batchFilter).OrderBy(i => i.Order.SupplierBatch?.Name ?? "-");
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await OrderService.GetSupplierItemsAsync();
+    }
+
+    private async Task ChangeArrivalAsync(OrderItem item, DateTime? arrivedDate)
+    {
+        await OrderService.SetItemArrivalAsync(item.Id, arrivedDate);
+        _items = await OrderService.GetSupplierItemsAsync();
+    }
+}

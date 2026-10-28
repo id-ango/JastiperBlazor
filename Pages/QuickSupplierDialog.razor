@@ -1,0 +1,38 @@
+@using JastiperBlazor.Models
+@using JastiperBlazor.Services
+@inject SupplierService SupplierService
+
+<MudDialog>
+    <DialogContent>
+        <MudPaper Elevation="0" Outlined="true" Class="rounded-lg pa-4">
+        <MudTextField @bind-Value="_supplier.Name" Label="Nama Supplier" Required="true" Variant="Variant.Outlined" />
+        <MudTextField @bind-Value="_supplier.Country" Label="Negara" Class="mt-3" Variant="Variant.Outlined" />
+        <MudTextField @bind-Value="_supplier.Notes" Label="Catatan" Lines="2" Class="mt-3" Variant="Variant.Outlined" />
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Batal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Simpan</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public string? Name { get; set; }
+
+    private Supplier _supplier = new();
+
+    protected override void OnInitialized()
+    {
+        _supplier.Name = Name ?? string.Empty;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(_supplier.Name)) return;
+        await SupplierService.CreateAsync(_supplier);
+        MudDialog.Close(DialogResult.Ok(_supplier));
+    }
+}

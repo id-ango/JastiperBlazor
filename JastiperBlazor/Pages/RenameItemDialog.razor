@@ -1,0 +1,30 @@
+<MudDialog>
+    <DialogContent>
+        <MudText>Nama lama: <b>@OldName</b></MudText>
+        <MudTextField @bind-Value="_newName" Label="Nama baru" Required="true" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Batal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Simpan</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public string OldName { get; set; } = "";
+
+    private string _newName = "";
+
+    protected override void OnInitialized()
+    {
+        _newName = OldName;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Save()
+    {
+        if (!string.IsNullOrWhiteSpace(_newName))
+            MudDialog.Close(DialogResult.Ok(_newName.Trim()));
+    }
+}

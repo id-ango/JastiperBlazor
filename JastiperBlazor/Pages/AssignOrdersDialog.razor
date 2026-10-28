@@ -1,0 +1,39 @@
+@using JastiperBlazor.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudText>Pilih order yang sudah DP untuk dimasukkan ke batch ini:</MudText>
+        <MudTable Items="@Orders" Dense="true" MultiSelection="true" @bind-SelectedItems="_selected">
+            <HeaderContent>
+                <MudTh>Customer</MudTh>
+                <MudTh>Total</MudTh>
+                <MudTh>Tanggal</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Customer.Name</MudTd>
+                <MudTd>@context.TotalSellingPrice.ToString("N0")</MudTd>
+                <MudTd>@context.OrderDate.ToString("dd/MM")</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Batal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Tambahkan</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public List<Order> Orders { get; set; } = new();
+    [Parameter] public int BatchId { get; set; }
+
+    private HashSet<Order> _selected = new();
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Save()
+    {
+        var ids = _selected.Select(o => o.Id).ToList();
+        MudDialog.Close(DialogResult.Ok(ids));
+    }
+}

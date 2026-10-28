@@ -1,0 +1,66 @@
+@page "/items"
+@using JastiperBlazor.Services
+@inject ProductService ProductService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Daftar Item</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Daftar Item</MudText>
+<MudText Typo="Typo.body2" Class="mb-4">Nama barang yang pernah diinput. Klik edit untuk memperbaiki nama yang salah (akan mengubah semua order yang memakai nama tersebut).</MudText>
+
+<MudTextField @bind-Value="_search" Label="Cari nama item" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="mb-4" />
+
+<MudTable Items="@FilteredItems" Hover="true" Dense="true">
+    <HeaderContent>
+        <MudTh>Nama Item</MudTh>
+        <MudTh>Jumlah Pemakaian</MudTh>
+        <MudTh>Aksi</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context</MudTd>
+        <MudTd>@_usageCounts.GetValueOrDefault(context, 0)</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => Rename(context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<string> _allItems = new();
+    private Dictionary<string, int> _usageCounts = new();
+    private string _search = "";
+
+    private IEnumerable<string> FilteredItems =>
+        string.IsNullOrWhiteSpace(_search)
+            ? _allItems
+            : _allItems.Where(i => i.Contains(_search, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _allItems = await ProductService.GetAllProductNamesAsync();
+        _usageCounts.Clear();
+        foreach (var name in _allItems)
+        {
+            _usageCounts[name] = await ProductService.GetUsageCountAsync(name);
+        }
+    }
+
+    private async Task Rename(string oldName)
+    {
+        var parameters = new DialogParameters { ["OldName"] = oldName };
+        var dialog = await DialogService.ShowAsync<RenameItemDialog>("Rename Item", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is string newName && !string.IsNullOrWhiteSpace(newName))
+        {
+            await ProductService.RenameProductAsync(oldName, newName.Trim());
+            Snackbar.Add($"Nama item diubah menjadi: {newName}", Severity.Success);
+            await Load();
+        }
+    }
+}

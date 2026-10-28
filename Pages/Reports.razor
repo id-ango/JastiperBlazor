@@ -1,0 +1,55 @@
+@page "/reports"
+@using JastiperBlazor.Services
+@using JastiperBlazor.Models
+@inject ReportService ReportService
+
+<PageTitle>Laporan</PageTitle>
+
+<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Laporan & Analisa</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">Gunakan data ini untuk promosi ke customer setia dan analisa produk yang paling laris.</MudText>
+
+<MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden mt-4">
+<MudTabs Elevation="0" Rounded="true">
+    <MudTabPanel Text="Item Terlaris">
+        <MudTable Items="@_topItems" Hover="true" Dense="true">
+            <HeaderContent>
+                <MudTh>Produk</MudTh>
+                <MudTh>Total Qty</MudTh>
+                <MudTh>Total Revenue</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.ProductName</MudTd>
+                <MudTd>@context.TotalQuantity</MudTd>
+                <MudTd>@context.TotalRevenue.ToString("N0")</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudTabPanel>
+    <MudTabPanel Text="Customer Terbaik">
+        <MudTable Items="@_topCustomers" Hover="true" Dense="true">
+            <HeaderContent>
+                <MudTh>Customer</MudTh>
+                <MudTh>WA</MudTh>
+                <MudTh>Jumlah Order</MudTh>
+                <MudTh>Total Belanja</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Customer.Name</MudTd>
+                <MudTd>@context.Customer.WhatsAppNumber</MudTd>
+                <MudTd>@context.OrderCount</MudTd>
+                <MudTd>@context.TotalSpent.ToString("N0")</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudTabPanel>
+</MudTabs>
+</MudPaper>
+
+@code {
+    private List<TopItemDto> _topItems = new();
+    private List<TopCustomerDto> _topCustomers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _topItems = await ReportService.GetTopSellingItemsAsync();
+        _topCustomers = await ReportService.GetTopCustomersAsync();
+    }
+}

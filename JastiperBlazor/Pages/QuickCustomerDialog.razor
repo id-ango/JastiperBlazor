@@ -1,0 +1,27 @@
+@using JastiperBlazor.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="_customer.Name" Label="Nama" Required="true" />
+        <MudTextField @bind-Value="_customer.WhatsAppNumber" Label="Nomor WhatsApp" Required="true" Class="mt-3" />
+        <MudTextField @bind-Value="_customer.Address" Label="Alamat (opsional)" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Batal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Simpan</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+
+    private Customer _customer = new();
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Save()
+    {
+        if (!string.IsNullOrWhiteSpace(_customer.Name) && !string.IsNullOrWhiteSpace(_customer.WhatsAppNumber))
+            MudDialog.Close(DialogResult.Ok(_customer));
+    }
+}

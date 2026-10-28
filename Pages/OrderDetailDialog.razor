@@ -1,0 +1,57 @@
+@using JastiperBlazor.Models
+@using JastiperBlazor.Services
+@inject OrderService OrderService
+
+<MudDialog>
+    <DialogContent>
+        @if (_order == null)
+        {
+            <MudText>Memuat data order...</MudText>
+        }
+        else
+        {
+        <MudPaper Elevation="0" Outlined="true" Class="rounded-lg pa-4">
+            <MudText Typo="Typo.body1">Customer: <b>@_order.Customer.Name</b> (@_order.Customer.WhatsAppNumber)</MudText>
+            <MudText Typo="Typo.body2">Tanggal: @_order.OrderDate.ToString("dd/MM/yyyy") | Status: @_order.Status</MudText>
+            @if (!string.IsNullOrWhiteSpace(_order.Notes))
+            {
+                <MudText Typo="Typo.body2">Catatan: @_order.Notes</MudText>
+            }
+
+            <MudTable Items="@_order.Items" Dense="true" Class="mt-4">
+                <HeaderContent>
+                    <MudTh>Produk</MudTh>
+                    <MudTh>Qty</MudTh>
+                    <MudTh>Harga Jual</MudTh>
+                    <MudTh>Subtotal</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.ProductName</MudTd>
+                    <MudTd>@context.Quantity</MudTd>
+                    <MudTd>@context.UnitSellingPrice.ToString("N0")</MudTd>
+                    <MudTd>@((context.Quantity * context.UnitSellingPrice).ToString("N0"))</MudTd>
+                </RowTemplate>
+            </MudTable>
+
+            <MudText Typo="Typo.subtitle1" Class="mt-3" Align="Align.End">Total: @_order.Items.Sum(i => i.Quantity * i.UnitSellingPrice).ToString("N0")</MudText>
+        </MudPaper>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close">Tutup</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int OrderId { get; set; }
+
+    private Order? _order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _order = await OrderService.GetByIdAsync(OrderId);
+    }
+
+    private void Close() => MudDialog.Close();
+}

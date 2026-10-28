@@ -1,0 +1,55 @@
+@page "/customers/{Id:int}"
+@using JastiperBlazor.Services
+@using JastiperBlazor.Models
+@inject CustomerService CustomerService
+@inject NavigationManager Navigation
+
+<PageTitle>Detail Customer</PageTitle>
+
+@if (_customer == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudText Typo="Typo.h4">@_customer.Name</MudText>
+    <MudText>WA: @_customer.WhatsAppNumber</MudText>
+    @if (!string.IsNullOrEmpty(_customer.Address))
+    {
+        <MudText>Alamat: @_customer.Address</MudText>
+    }
+    @if (!string.IsNullOrEmpty(_customer.Notes))
+    {
+        <MudText>Catatan: @_customer.Notes</MudText>
+    }
+
+    <MudText Typo="Typo.h5" Class="mt-6">Riwayat Order</MudText>
+    <MudTable Items="@_customer.Orders.OrderByDescending(o => o.OrderDate)" Hover="true">
+        <HeaderContent>
+            <MudTh>Tanggal</MudTh>
+            <MudTh>Total</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Items</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.OrderDate.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd>@context.TotalSellingPrice.ToString("N0")</MudTd>
+            <MudTd>@context.Status</MudTd>
+            <MudTd>@string.Join(", ", context.Items.Select(i => i.ProductName))</MudTd>
+        </RowTemplate>
+    </MudTable>
+
+    <MudButton Variant="Variant.Outlined" OnClick="@(() => Navigation.NavigateTo("/customers"))" Class="mt-4">Kembali</MudButton>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Customer? _customer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _customer = await CustomerService.GetByIdAsync(Id);
+    }
+}

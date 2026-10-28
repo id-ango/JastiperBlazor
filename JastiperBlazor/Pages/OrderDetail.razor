@@ -1,0 +1,279 @@
+@page "/orders/add"
+@page "/orders/{Id:int}"
+@using JastiperBlazor.Services
+@using JastiperBlazor.Models
+@inject OrderService OrderService
+@inject CustomerService CustomerService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject SupplierBatchService BatchService
+
+<PageTitle>@(Id == null ? "Order Baru" : $"Order #{Id}")</PageTitle>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudText Typo="Typo.h4">@(Id == null ? "Buat Order Baru" : $"Order #{_order.Id}")</MudText>
+
+    <MudGrid Class="mt-4">
+        <MudItem xs="12" md="6">
+            <MudAutocomplete T="Customer" @bind-Value="_selectedCustomer" 
+                             Label="Customer (ketik nama atau WA)" 
+                             SearchFunc="@SearchCustomers"
+                             ToStringFunc="@(c => c == null ? "" : $"{c.Name} ({c.WhatsAppNumber})")"
+                             Clearable="true"
+                             Required="true" />
+            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick="CreateNewCustomer" Class="mt-1">
+                + Customer baru
+            </MudButton>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudDatePicker @bind-Date="_orderDate" Label="Tanggal Order" Editable="true" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudSelect T="int?" @bind-Value="_order.SupplierBatchId" Label="Supplier Batch" Clearable="true">
+                @foreach (var batch in _batches)
+                {
+                    <MudSelectItem T="int?" Value="@batch.Id">@batch.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="_order.Notes" Label="Catatan / Keterangan Batch" Lines="2" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h6" Class="mt-6">Items</MudText>
+    <MudTable Items="@_order.Items" Dense="true">
+        <HeaderContent>
+            <MudTh>Produk</MudTh>
+            <MudTh>Qty</MudTh>
+            <MudTh>Harga Jual</MudTh>
+            <MudTh>Subtotal</MudTh>
+            <MudTh>Supplier</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.ProductName</MudTd>
+            <MudTd>@context.Quantity</MudTd>
+            <MudTd>@context.UnitSellingPrice.ToString("N0")</MudTd>
+            <MudTd>@(context.Quantity * context.UnitSellingPrice)</MudTd>
+            <MudTd>@context.SupplierCountry</MudTd>
+            <MudTd>
+                @if (Id == null)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveItem(context))" />
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+    @if (Id == null)
+    {
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AddItem" StartIcon="@Icons.Material.Filled.Add" Class="mt-2">
+            Tambah Item
+        </MudButton>
+    }
+
+    <MudText Typo="Typo.h6" Class="mt-4">Total Harga Jual: @_order.TotalSellingPrice.ToString("N0")</MudText>
+    @if (_order.DPAmount > 0)
+    {
+        <MudText>DP: @_order.DPAmount.ToString("N0") (@_order.DPDate?.ToString("dd/MM/yyyy"))</MudText>
+    }
+    @if (_order.FullPaymentAmount > 0)
+    {
+        <MudText>Full Payment: @_order.FullPaymentAmount.ToString("N0") + Ongkir @_order.ShippingCost.ToString("N0") (@_order.FullPaymentDate?.ToString("dd/MM/yyyy"))</MudText>
+    }
+    @if (_order.SupplierBatch != null)
+    {
+        <MudText>Batch Supplier: @_order.SupplierBatch.Name</MudText>
+    }
+
+    <div class="mt-6">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save">Simpan Order</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="@(() => Navigation.NavigateTo("/orders"))" Class="ml-2">Kembali</MudButton>
+    </div>
+
+    @if (Id != null)
+    {
+        <MudDivider Class="my-6" />
+        <MudText Typo="Typo.h6">Aksi Status</MudText>
+        <div class="d-flex gap-2 mt-2 flex-wrap">
+            @if (_order.Status == OrderStatus.PendingDP)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="RecordDP">Catat DP</MudButton>
+            }
+            @if (_order.Status == OrderStatus.DPReceived)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="MarkOrdered">Tandai Sudah Dipesan ke Supplier</MudButton>
+            }
+            @if (_order.Status == OrderStatus.OrderedToSupplier)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="MarkArrived">Tandai Sudah Sampai</MudButton>
+            }
+            @if (_order.Status == OrderStatus.Arrived)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="RecordFullPayment">Catat Full Payment + Ongkir</MudButton>
+            }
+            @if (_order.Status == OrderStatus.FullPaymentReceived)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="MarkShipped">Tandai Sudah Dikirim</MudButton>
+            }
+            @if (_order.Status == OrderStatus.Shipped)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="MarkCompleted">Tandai Selesai</MudButton>
+            }
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private Order _order = new() { Items = new() };
+    private List<Customer> _customers = new();
+    private Customer? _selectedCustomer;
+    private DateTime? _orderDate = DateTime.Today;
+    private List<SupplierBatch> _batches = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _customers = await CustomerService.GetAllAsync();
+        _batches = await BatchService.GetAllAsync();
+        if (Id.HasValue)
+        {
+            var existing = await OrderService.GetByIdAsync(Id.Value);
+            if (existing != null)
+            {
+                _order = existing;
+                _orderDate = existing.OrderDate;
+                _selectedCustomer = existing.Customer;
+            }
+        }
+        _loading = false;
+    }
+
+    private async Task<IEnumerable<Customer>> SearchCustomers(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return _customers;
+
+        return _customers.Where(c =>
+            c.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            c.WhatsAppNumber.Contains(value));
+    }
+
+    private async Task CreateNewCustomer()
+    {
+        var parameters = new DialogParameters();
+        var dialog = await DialogService.ShowAsync<QuickCustomerDialog>("Customer Baru", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is Customer newCust)
+        {
+            var created = await CustomerService.CreateAsync(newCust);
+            _customers.Add(created);
+            _selectedCustomer = created;
+            StateHasChanged();
+        }
+    }
+    private async Task AddItem()
+    {
+        var parameters = new DialogParameters
+        {
+            ["OnAdd"] = EventCallback.Factory.Create<OrderItem>(this, item =>
+            {
+                _order.Items.Add(item);
+                _order.TotalSellingPrice = _order.Items.Sum(i => i.Quantity * i.UnitSellingPrice);
+                StateHasChanged();
+            })
+        };
+        await DialogService.ShowAsync<AddItemDialog>("Tambah Item", parameters);
+    }
+
+    private void RemoveItem(OrderItem item)
+    {
+        _order.Items.Remove(item);
+        _order.TotalSellingPrice = _order.Items.Sum(i => i.Quantity * i.UnitSellingPrice);
+    }
+
+    private async Task Save()
+    {
+        if (_selectedCustomer == null)
+        {
+            // TODO: show snackbar
+            return;
+        }
+        _order.CustomerId = _selectedCustomer.Id;
+        _order.OrderDate = _orderDate ?? DateTime.Today;
+        _order.SupplierBatch = _batches.FirstOrDefault(b => b.Id == _order.SupplierBatchId);
+        if (Id == null)
+        {
+            await OrderService.CreateAsync(_order);
+        }
+        else
+        {
+            await OrderService.UpdateAsync(_order);
+        }
+        Navigation.NavigateTo("/orders");
+    }
+
+    private async Task RecordDP()
+    {
+        var parameters = new DialogParameters { ["OrderId"] = _order.Id };
+        var dialog = await DialogService.ShowAsync<RecordDPDialog>("Catat DP", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is DPRecord dp)
+        {
+            await OrderService.RecordDPAsync(_order.Id, dp.Amount, dp.Date);
+            await Reload();
+        }
+    }
+
+    private async Task MarkOrdered()
+    {
+        await OrderService.UpdateStatusAsync(_order.Id, OrderStatus.OrderedToSupplier);
+        await Reload();
+    }
+
+    private async Task MarkArrived()
+    {
+        await OrderService.UpdateStatusAsync(_order.Id, OrderStatus.Arrived);
+        await Reload();
+    }
+
+    private async Task RecordFullPayment()
+    {
+        var parameters = new DialogParameters { ["OrderId"] = _order.Id, ["CurrentTotal"] = _order.TotalSellingPrice };
+        var dialog = await DialogService.ShowAsync<RecordFullPaymentDialog>("Catat Pembayaran Full", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is FullPaymentRecord fp)
+        {
+            await OrderService.RecordFullPaymentAsync(_order.Id, fp.Amount, fp.Shipping, fp.Date);
+            await Reload();
+        }
+    }
+
+    private async Task MarkShipped()
+    {
+        await OrderService.UpdateStatusAsync(_order.Id, OrderStatus.Shipped);
+        await Reload();
+    }
+
+    private async Task MarkCompleted()
+    {
+        await OrderService.UpdateStatusAsync(_order.Id, OrderStatus.Completed);
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        var existing = await OrderService.GetByIdAsync(_order.Id);
+        if (existing != null) _order = existing;
+        StateHasChanged();
+    }
+}

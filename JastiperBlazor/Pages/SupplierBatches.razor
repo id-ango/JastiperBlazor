@@ -1,0 +1,153 @@
+@page "/supplier-batches"
+@page "/supplier-batches/{Id:int}"
+@using JastiperBlazor.Services
+@using JastiperBlazor.Models
+@inject SupplierBatchService BatchService
+@inject OrderService OrderService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+
+<PageTitle>Supplier Batches</PageTitle>
+
+@if (Id == null)
+{
+    <MudText Typo="Typo.h4" GutterBottom="true">Supplier Batches</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowCreateDialog" StartIcon="@Icons.Material.Filled.Add" Class="mb-4">
+        Buat Batch Baru
+    </MudButton>
+
+    <MudTable Items="@_batches" Hover="true" Dense="true">
+        <HeaderContent>
+            <MudTh>Nama Batch</MudTh>
+            <MudTh>Negara</MudTh>
+            <MudTh>Tanggal Pesan</MudTh>
+            <MudTh>Jumlah Order</MudTh>
+            <MudTh>Total Cost</MudTh>
+            <MudTh>Status Bayar</MudTh>
+            <MudTh>Aksi</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.SupplierCountry</MudTd>
+            <MudTd>@context.OrderDateToSupplier.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd>@context.Orders.Count</MudTd>
+            <MudTd>@context.TotalCostToSupplier.ToString("N0")</MudTd>
+            <MudTd>
+                @if (context.PaymentDateToSupplier.HasValue)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small">Sudah Bayar</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small">Belum</MudChip>
+                }
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo($"/supplier-batches/{context.Id}"))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+else
+{
+    @if (_selectedBatch == null)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <MudText Typo="Typo.h4">@_selectedBatch.Name</MudText>
+        <MudText>Negara: @_selectedBatch.SupplierCountry</MudText>
+        <MudText>Tanggal Pesan: @_selectedBatch.OrderDateToSupplier.ToString("dd/MM/yyyy")</MudText>
+        @if (_selectedBatch.PaymentDateToSupplier.HasValue)
+        {
+            <MudText>Sudah bayar ke supplier: @_selectedBatch.PaymentDateToSupplier?.ToString("dd/MM/yyyy") - Total @_selectedBatch.TotalCostToSupplier.ToString("N0")</MudText>
+        }
+
+        <MudText Typo="Typo.h6" Class="mt-6">Orders dalam Batch ini</MudText>
+        <MudTable Items="@_selectedBatch.Orders" Hover="true" Dense="true">
+            <HeaderContent>
+                <MudTh>Customer</MudTh>
+                <MudTh>Total Jual</MudTh>
+                <MudTh>Status</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Customer.Name</MudTd>
+                <MudTd>@context.TotalSellingPrice.ToString("N0")</MudTd>
+                <MudTd>@context.Status</MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        <div class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AssignOrders">Tambahkan Order (yang sudah DP)</MudButton>
+            @if (!_selectedBatch.PaymentDateToSupplier.HasValue)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="MarkPaid" Class="ml-2">Tandai Sudah Bayar ke Supplier</MudButton>
+            }
+        </div>
+
+        <MudButton Variant="Variant.Outlined" OnClick="@(() => Navigation.NavigateTo("/supplier-batches"))" Class="mt-4">Kembali</MudButton>
+    }
+}
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private List<SupplierBatch> _batches = new();
+    private SupplierBatch? _selectedBatch;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id == null)
+        {
+            _batches = await BatchService.GetAllAsync();
+        }
+        else
+        {
+            _selectedBatch = await BatchService.GetByIdAsync(Id.Value);
+        }
+    }
+
+    private async Task ShowCreateDialog()
+    {
+        var parameters = new DialogParameters();
+        var dialog = await DialogService.ShowAsync<CreateBatchDialog>("Buat Batch Baru", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is SupplierBatch newBatch)
+        {
+            await BatchService.CreateAsync(newBatch);
+            _batches = await BatchService.GetAllAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task AssignOrders()
+    {
+        if (_selectedBatch == null) return;
+        var pending = await OrderService.GetByStatusAsync(OrderStatus.DPReceived);
+        var parameters = new DialogParameters { ["Orders"] = pending, ["BatchId"] = _selectedBatch.Id };
+        var dialog = await DialogService.ShowAsync<AssignOrdersDialog>("Pilih Order untuk Batch", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is List<int> ids && ids.Any())
+        {
+            await BatchService.AssignOrdersAsync(_selectedBatch.Id, ids);
+            _selectedBatch = await BatchService.GetByIdAsync(_selectedBatch.Id);
+            StateHasChanged();
+        }
+    }
+
+    private async Task MarkPaid()
+    {
+        if (_selectedBatch == null) return;
+        var parameters = new DialogParameters { ["BatchId"] = _selectedBatch.Id };
+        var dialog = await DialogService.ShowAsync<MarkBatchPaidDialog>("Catat Pembayaran ke Supplier", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is (decimal cost, DateTime date))
+        {
+            await BatchService.MarkPaymentToSupplierAsync(_selectedBatch.Id, cost, date);
+            _selectedBatch = await BatchService.GetByIdAsync(_selectedBatch.Id);
+            StateHasChanged();
+        }
+    }
+}
