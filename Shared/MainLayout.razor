@@ -1,17 +1,21 @@
 @inherits LayoutComponentBase
 
 <MudLayout>
-    <MudAppBar Elevation="1">
+    <MudAppBar Elevation="0" Class="border-b">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h5" Class="ml-3">Jastiper App</MudText>
+        <MudText Typo="Typo.h6" Class="ml-2 font-weight-bold">Jastiper</MudText>
         <MudSpacer />
-        <MudText Typo="Typo.body2">Sistem Manajemen Jastiper</MudText>
+        <MudText Typo="Typo.body2" Class="d-none d-md-flex">Sistem Manajemen Jastiper</MudText>
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" Breakpoint="Breakpoint.Md" ClipMode="DrawerClipMode.Always" Elevation="0" Class="border-r">
+        <MudToolBar Class="mt-2">
+            <MudIcon Icon="@Icons.Material.Filled.Storefront" Color="Color.Primary" />
+            <MudText Typo="Typo.h6" Class="ml-2 font-weight-bold">Jastiper</MudText>
+        </MudToolBar>
         <NavMenu />
     </MudDrawer>
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-4 pt-4">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="px-3 px-sm-4 px-md-6 py-4">
             @Body
         </MudContainer>
     </MudMainContent>

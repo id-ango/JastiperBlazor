@@ -17,16 +17,16 @@
 <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden mt-4">
 <MudTable Items="@_filteredCustomers" Hover="true" Dense="true">
     <HeaderContent>
-        <MudTh>Nama</MudTh>
-        <MudTh>WhatsApp</MudTh>
-        <MudTh>Jumlah Order</MudTh>
+        <MudTh><MudTableSortLabel T="Customer" SortBy="c => c.Name">Nama</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Customer" SortBy="c => c.WhatsAppNumber">WhatsApp</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-sm-table-cell"><MudTableSortLabel T="Customer" SortBy="c => c.Orders.Count">Jumlah Order</MudTableSortLabel></MudTh>
         <MudTh>Aksi</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.Name</MudTd>
-        <MudTd>@context.WhatsAppNumber</MudTd>
-        <MudTd>@context.Orders.Count</MudTd>
-        <MudTd>
+        <MudTd DataLabel="Nama">@context.Name</MudTd>
+        <MudTd DataLabel="WhatsApp">@context.WhatsAppNumber</MudTd>
+        <MudTd DataLabel="Jumlah Order" Class="d-none d-sm-table-cell">@context.Orders.Count</MudTd>
+        <MudTd DataLabel="Aksi">
             <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" OnClick="@(() => ViewCustomer(context.Id))" />
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info" OnClick="@(() => EditCustomer(context))" />
         </MudTd>

@@ -9,7 +9,7 @@
 <MudText Typo="Typo.body1" Class="mb-4">Gunakan data ini untuk promosi ke customer setia dan analisa produk yang paling laris.</MudText>
 
 <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden mt-4">
-<MudTabs Elevation="0" Rounded="true">
+<MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-0" MobileBreakpoint="Breakpoint.Sm">
     <MudTabPanel Text="Item Terlaris">
         <MudTable Items="@_topItems" Hover="true" Dense="true">
             <HeaderContent>
@@ -18,9 +18,9 @@
                 <MudTh>Total Revenue</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@context.ProductName</MudTd>
-                <MudTd>@context.TotalQuantity</MudTd>
-                <MudTd>@context.TotalRevenue.ToString("N0")</MudTd>
+                <MudTd DataLabel="Produk">@context.ProductName</MudTd>
+                <MudTd DataLabel="Total Qty">@context.TotalQuantity</MudTd>
+                <MudTd DataLabel="Total Revenue">@context.TotalRevenue.ToString("N0")</MudTd>
             </RowTemplate>
         </MudTable>
     </MudTabPanel>
@@ -28,15 +28,15 @@
         <MudTable Items="@_topCustomers" Hover="true" Dense="true">
             <HeaderContent>
                 <MudTh>Customer</MudTh>
-                <MudTh>WA</MudTh>
+                <MudTh Class="d-none d-md-table-cell">WA</MudTh>
                 <MudTh>Jumlah Order</MudTh>
                 <MudTh>Total Belanja</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@context.Customer.Name</MudTd>
-                <MudTd>@context.Customer.WhatsAppNumber</MudTd>
-                <MudTd>@context.OrderCount</MudTd>
-                <MudTd>@context.TotalSpent.ToString("N0")</MudTd>
+                <MudTd DataLabel="Customer">@context.Customer.Name</MudTd>
+                <MudTd DataLabel="WA" Class="d-none d-md-table-cell">@context.Customer.WhatsAppNumber</MudTd>
+                <MudTd DataLabel="Jumlah Order">@context.OrderCount</MudTd>
+                <MudTd DataLabel="Total Belanja">@context.TotalSpent.ToString("N0")</MudTd>
             </RowTemplate>
         </MudTable>
     </MudTabPanel>

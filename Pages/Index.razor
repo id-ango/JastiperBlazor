@@ -8,29 +8,49 @@
 
 <MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Dashboard</MudText>
 
-<MudGrid>
+<MudGrid Spacing="3">
     <MudItem xs="12" sm="6" md="3">
-        <MudPaper Class="pa-4" Elevation="2">
-            <MudText Typo="Typo.subtitle2">Total Order</MudText>
-            <MudText Typo="Typo.h4">@_statusSummary.Values.Sum()</MudText>
+        <MudPaper Elevation="0" Outlined="true" Class="pa-4 rounded-lg">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Total Order</MudText>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold">@_statusSummary.Values.Sum()</MudText>
+                </MudStack>
+                <MudAvatar Color="Color.Primary" Variant="Variant.Outlined" Rounded="true"><MudIcon Icon="@Icons.Material.Filled.ShoppingCart" /></MudAvatar>
+            </MudStack>
         </MudPaper>
     </MudItem>
     <MudItem xs="12" sm="6" md="3">
-        <MudPaper Class="pa-4" Elevation="2">
-            <MudText Typo="Typo.subtitle2">Menunggu DP</MudText>
-            <MudText Typo="Typo.h4">@_statusSummary.GetValueOrDefault(OrderStatus.PendingDP)</MudText>
+        <MudPaper Elevation="0" Outlined="true" Class="pa-4 rounded-lg">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Menunggu DP</MudText>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold">@_statusSummary.GetValueOrDefault(OrderStatus.PendingDP)</MudText>
+                </MudStack>
+                <MudAvatar Color="Color.Warning" Variant="Variant.Outlined" Rounded="true"><MudIcon Icon="@Icons.Material.Filled.HourglassEmpty" /></MudAvatar>
+            </MudStack>
         </MudPaper>
     </MudItem>
     <MudItem xs="12" sm="6" md="3">
-        <MudPaper Class="pa-4" Elevation="2">
-            <MudText Typo="Typo.subtitle2">Sudah DP</MudText>
-            <MudText Typo="Typo.h4">@_statusSummary.GetValueOrDefault(OrderStatus.DPReceived)</MudText>
+        <MudPaper Elevation="0" Outlined="true" Class="pa-4 rounded-lg">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Sudah DP</MudText>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold">@_statusSummary.GetValueOrDefault(OrderStatus.DPReceived)</MudText>
+                </MudStack>
+                <MudAvatar Color="Color.Info" Variant="Variant.Outlined" Rounded="true"><MudIcon Icon="@Icons.Material.Filled.Payments" /></MudAvatar>
+            </MudStack>
         </MudPaper>
     </MudItem>
     <MudItem xs="12" sm="6" md="3">
-        <MudPaper Class="pa-4" Elevation="2">
-            <MudText Typo="Typo.subtitle2">Sudah Sampai</MudText>
-            <MudText Typo="Typo.h4">@_statusSummary.GetValueOrDefault(OrderStatus.Arrived)</MudText>
+        <MudPaper Elevation="0" Outlined="true" Class="pa-4 rounded-lg">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Sudah Sampai</MudText>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold">@_statusSummary.GetValueOrDefault(OrderStatus.Arrived)</MudText>
+                </MudStack>
+                <MudAvatar Color="Color.Success" Variant="Variant.Outlined" Rounded="true"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" /></MudAvatar>
+            </MudStack>
         </MudPaper>
     </MudItem>
 </MudGrid>
@@ -39,16 +59,16 @@
 <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden">
 <MudTable Items="@_recentOrders" Hover="true" Dense="true">
     <HeaderContent>
-        <MudTh>Tanggal</MudTh>
-        <MudTh>Customer</MudTh>
-        <MudTh>Total</MudTh>
-        <MudTh>Status</MudTh>
+        <MudTh><MudTableSortLabel T="Order" SortBy="o => o.OrderDate">Tanggal</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Order" SortBy="o => o.Customer.Name">Customer</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-sm-table-cell"><MudTableSortLabel T="Order" SortBy="o => o.TotalSellingPrice">Total</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Order" SortBy="o => o.Status">Status</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.OrderDate.ToString("dd/MM/yyyy")</MudTd>
-        <MudTd>@context.Customer.Name</MudTd>
-        <MudTd>@context.TotalSellingPrice.ToString("N0")</MudTd>
-        <MudTd>
+        <MudTd DataLabel="Tanggal">@context.OrderDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="Customer">@context.Customer.Name</MudTd>
+        <MudTd DataLabel="Total" Class="d-none d-sm-table-cell">@context.TotalSellingPrice.ToString("N0")</MudTd>
+        <MudTd DataLabel="Status">
             <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@context.Status</MudChip>
         </MudTd>
     </RowTemplate>

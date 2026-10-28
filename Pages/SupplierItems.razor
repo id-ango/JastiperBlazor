@@ -18,30 +18,30 @@
 <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden">
 <MudTable Items="_filteredItems" Hover="true" Dense="true" Striped="false">
     <HeaderContent>
-        <MudTh>Sudah Sampai</MudTh>
-        <MudTh>Tgl Sampai</MudTh>
-        <MudTh>Supplier Batch</MudTh>
-        <MudTh>Produk</MudTh>
-        <MudTh>Customer</MudTh>
-        <MudTh>Order #</MudTh>
-        <MudTh>Qty</MudTh>
-        <MudTh>Negara</MudTh>
-        <MudTh>Status Order</MudTh>
+        <MudTh><MudTableSortLabel T="OrderItem" SortBy="i => i.ArrivedDate.HasValue">Sudah Sampai</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-md-table-cell"><MudTableSortLabel T="OrderItem" SortBy="i => i.ArrivedDate">Tgl Sampai</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-sm-table-cell"><MudTableSortLabel T="OrderItem" SortBy="i => i.Order.SupplierBatch?.Name">Supplier Batch</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="OrderItem" SortBy="i => i.ProductName">Produk</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="OrderItem" SortBy="i => i.Order.Customer.Name">Customer</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-lg-table-cell"><MudTableSortLabel T="OrderItem" SortBy="i => i.OrderId">Order #</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-sm-table-cell"><MudTableSortLabel T="OrderItem" SortBy="i => i.Quantity">Qty</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-lg-table-cell"><MudTableSortLabel T="OrderItem" SortBy="i => i.SupplierCountry">Negara</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="OrderItem" SortBy="i => i.Order.Status">Status Order</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>
+        <MudTd DataLabel="Sudah Sampai">
             <MudCheckBox T="bool" Value="context.ArrivedDate.HasValue" ValueChanged="@(v => ChangeArrivalAsync(context, v ? DateTime.Today : null))" />
         </MudTd>
-        <MudTd>
+        <MudTd DataLabel="Tgl Sampai" Class="d-none d-md-table-cell">
             <MudDatePicker Date="context.ArrivedDate" DateChanged="@(d => ChangeArrivalAsync(context, d))" Editable="true" Dense="true" Variant="Variant.Outlined" />
         </MudTd>
-        <MudTd>@(context.Order.SupplierBatch?.Name ?? "-")</MudTd>
-        <MudTd>@context.ProductName</MudTd>
-        <MudTd>@context.Order.Customer.Name</MudTd>
-        <MudTd>#@context.OrderId</MudTd>
-        <MudTd>@context.Quantity</MudTd>
-        <MudTd>@context.SupplierCountry</MudTd>
-        <MudTd>
+        <MudTd DataLabel="Supplier Batch" Class="d-none d-sm-table-cell">@(context.Order.SupplierBatch?.Name ?? "-")</MudTd>
+        <MudTd DataLabel="Produk">@context.ProductName</MudTd>
+        <MudTd DataLabel="Customer">@context.Order.Customer.Name</MudTd>
+        <MudTd DataLabel="Order #" Class="d-none d-lg-table-cell">#@context.OrderId</MudTd>
+        <MudTd DataLabel="Qty" Class="d-none d-sm-table-cell">@context.Quantity</MudTd>
+        <MudTd DataLabel="Negara" Class="d-none d-lg-table-cell">@context.SupplierCountry</MudTd>
+        <MudTd DataLabel="Status Order">
             <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary">@context.Order.Status</MudChip>
         </MudTd>
     </RowTemplate>

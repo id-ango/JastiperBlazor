@@ -19,21 +19,21 @@
     <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden">
     <MudTable Items="@_batches" Hover="true" Dense="true">
         <HeaderContent>
-            <MudTh>Nama Batch</MudTh>
-            <MudTh>Negara</MudTh>
-            <MudTh>Tanggal Pesan</MudTh>
-            <MudTh>Jumlah Order</MudTh>
-            <MudTh>Total Cost</MudTh>
-            <MudTh>Status Bayar</MudTh>
+            <MudTh><MudTableSortLabel T="SupplierBatch" SortBy="b => b.Name">Nama Batch</MudTableSortLabel></MudTh>
+            <MudTh Class="d-none d-md-table-cell"><MudTableSortLabel T="SupplierBatch" SortBy="b => b.SupplierCountry">Negara</MudTableSortLabel></MudTh>
+            <MudTh Class="d-none d-md-table-cell"><MudTableSortLabel T="SupplierBatch" SortBy="b => b.OrderDateToSupplier">Tanggal Pesan</MudTableSortLabel></MudTh>
+            <MudTh Class="d-none d-sm-table-cell"><MudTableSortLabel T="SupplierBatch" SortBy="b => b.Orders.Count">Jumlah Order</MudTableSortLabel></MudTh>
+            <MudTh Class="d-none d-lg-table-cell"><MudTableSortLabel T="SupplierBatch" SortBy="b => b.TotalCostToSupplier">Total Cost</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="SupplierBatch" SortBy="b => b.PaymentDateToSupplier.HasValue">Status Bayar</MudTableSortLabel></MudTh>
             <MudTh>Aksi</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd>@context.Name</MudTd>
-            <MudTd>@context.SupplierCountry</MudTd>
-            <MudTd>@context.OrderDateToSupplier.ToString("dd/MM/yyyy")</MudTd>
-            <MudTd>@context.Orders.Count</MudTd>
-            <MudTd>@context.TotalCostToSupplier.ToString("N0")</MudTd>
-            <MudTd>
+            <MudTd DataLabel="Nama Batch">@context.Name</MudTd>
+            <MudTd DataLabel="Negara" Class="d-none d-md-table-cell">@context.SupplierCountry</MudTd>
+            <MudTd DataLabel="Tanggal Pesan" Class="d-none d-md-table-cell">@context.OrderDateToSupplier.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Jumlah Order" Class="d-none d-sm-table-cell">@context.Orders.Count</MudTd>
+            <MudTd DataLabel="Total Cost" Class="d-none d-lg-table-cell">@context.TotalCostToSupplier.ToString("N0")</MudTd>
+            <MudTd DataLabel="Status Bayar">
                 @if (context.PaymentDateToSupplier.HasValue)
                 {
                     <MudChip T="string" Color="Color.Success" Size="Size.Small">Sudah Bayar</MudChip>
@@ -43,8 +43,7 @@
                     <MudChip T="string" Color="Color.Warning" Size="Size.Small">Belum</MudChip>
                 }
             </MudTd>
-            <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo($"/supplier-batches/{context.Id}"))" />
+            <MudTd DataLabel="Aksi">
             </MudTd>
         </RowTemplate>
     </MudTable>

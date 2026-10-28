@@ -23,24 +23,26 @@
 <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden mt-4">
 <MudTable Items="@_filteredOrders" Hover="true" Dense="true">
     <HeaderContent>
-        <MudTh>ID</MudTh>
-        <MudTh>Tanggal</MudTh>
-        <MudTh>Customer</MudTh>
-        <MudTh>Total Jual</MudTh>
-        <MudTh>Status</MudTh>
+        <MudTh><MudTableSortLabel T="Order" SortBy="o => o.Id">ID</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-md-table-cell"><MudTableSortLabel T="Order" SortBy="o => o.OrderDate">Tanggal</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Order" SortBy="o => o.Customer.Name">Customer</MudTableSortLabel></MudTh>
+        <MudTh Class="d-none d-sm-table-cell"><MudTableSortLabel T="Order" SortBy="o => o.TotalSellingPrice">Total Jual</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Order" SortBy="o => o.Status">Status</MudTableSortLabel></MudTh>
         <MudTh>Aksi</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.Id</MudTd>
-        <MudTd>@context.OrderDate.ToString("dd/MM/yyyy")</MudTd>
-        <MudTd>@context.Customer.Name</MudTd>
-        <MudTd>@context.TotalSellingPrice.ToString("N0")</MudTd>
-        <MudTd>
+        <MudTd DataLabel="ID">@context.Id</MudTd>
+        <MudTd DataLabel="Tanggal" Class="d-none d-md-table-cell">@context.OrderDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="Customer">@context.Customer.Name</MudTd>
+        <MudTd DataLabel="Total Jual" Class="d-none d-sm-table-cell">@context.TotalSellingPrice.ToString("N0")</MudTd>
+        <MudTd DataLabel="Status">
             <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@context.Status</MudChip>
         </MudTd>
-        <MudTd>
-            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" OnClick="@(() => ShowDetail(context.Id))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default" OnClick="@(() => Navigation.NavigateTo($"/orders/{context.Id}"))" />
+        <MudTd DataLabel="Aksi">
+            <MudStack Row="true" Spacing="1" Class="flex-nowrap">
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Medium" OnClick="@(() => ShowDetail(context.Id))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default" Variant="Variant.Outlined" Size="Size.Medium" OnClick="@(() => Navigation.NavigateTo($"/orders/{context.Id}"))" />
+            </MudStack>
         </MudTd>
     </RowTemplate>
 </MudTable>

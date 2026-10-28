@@ -14,14 +14,14 @@
 <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden">
 <MudTable Items="@FilteredItems" Hover="true" Dense="true">
     <HeaderContent>
-        <MudTh>Nama Item</MudTh>
-        <MudTh>Jumlah Pemakaian</MudTh>
+        <MudTh><MudTableSortLabel T="string" SortBy="s => s">Nama Item</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="string" SortBy="s => _usageCounts.GetValueOrDefault(s, 0)">Jumlah Pemakaian</MudTableSortLabel></MudTh>
         <MudTh>Aksi</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context</MudTd>
-        <MudTd>@_usageCounts.GetValueOrDefault(context, 0)</MudTd>
-        <MudTd>
+        <MudTd DataLabel="Nama Item">@context</MudTd>
+        <MudTd DataLabel="Jumlah Pemakaian">@_usageCounts.GetValueOrDefault(context, 0)</MudTd>
+        <MudTd DataLabel="Aksi">
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => Rename(context))" />
         </MudTd>
     </RowTemplate>
