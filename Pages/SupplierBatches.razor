@@ -11,10 +11,15 @@
 
 @if (Id == null)
 {
-    <MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Supplier Batches</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowCreateDialog" StartIcon="@Icons.Material.Filled.Add" Class="mb-4">
-        Buat Batch Baru
-    </MudButton>
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4" Wrap="Wrap.Wrap">
+        <MudStack Spacing="0">
+            <MudText Typo="Typo.h4" Class="font-weight-bold">Supplier Batches</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Kelola batch pesanan ke supplier</MudText>
+        </MudStack>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowCreateDialog" StartIcon="@Icons.Material.Filled.Add" Class="px-5">
+            Buat Batch Baru
+        </MudButton>
+    </MudStack>
 
     <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden">
     <MudTable Items="@_batches" Hover="true" Dense="true">
@@ -44,8 +49,12 @@
                 }
             </MudTd>
             <MudTd DataLabel="Aksi">
+                <MudTooltip Text="Lihat batch"><MudIconButton Icon="@Icons.Material.Outlined.Visibility" Color="Color.Primary" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/supplier-batches/{context.Id}"))" /></MudTooltip>
             </MudTd>
         </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] { 5, 10, 25 }" />
+        </PagerContent>
     </MudTable>
     </MudPaper>
 }

@@ -7,13 +7,17 @@
 
 <PageTitle>Orders</PageTitle>
 
-<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Daftar Order</MudText>
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4" Wrap="Wrap.Wrap">
+    <MudStack Spacing="0">
+        <MudText Typo="Typo.h4" Class="font-weight-bold">Daftar Order</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">Kelola order dan status pesanan</MudText>
+    </MudStack>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/orders/add"))" StartIcon="@Icons.Material.Filled.Add" Class="px-5">
+        Order Baru
+    </MudButton>
+</MudStack>
 
-<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/orders/add"))" StartIcon="@Icons.Material.Filled.Add">
-    Order Baru
-</MudButton>
-
-<MudSelect T="OrderStatus?" @bind-Value="_filterStatus" Label="Filter Status" Class="mt-4" Clearable="true">
+<MudSelect T="OrderStatus?" @bind-Value="_filterStatus" Label="Filter Status" Class="mb-4" Style="max-width:320px" Clearable="true" Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.FilterList">
     @foreach (var status in Enum.GetValues<OrderStatus>())
     {
         <MudSelectItem T="OrderStatus?" Value="@status">@status</MudSelectItem>
@@ -40,11 +44,14 @@
         </MudTd>
         <MudTd DataLabel="Aksi">
             <MudStack Row="true" Spacing="1" Class="flex-nowrap">
-                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Medium" OnClick="@(() => ShowDetail(context.Id))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default" Variant="Variant.Outlined" Size="Size.Medium" OnClick="@(() => Navigation.NavigateTo($"/orders/{context.Id}"))" />
+                <MudTooltip Text="Lihat detail"><MudIconButton Icon="@Icons.Material.Outlined.Visibility" Color="Color.Primary" Size="Size.Small" OnClick="@(() => ShowDetail(context.Id))" /></MudTooltip>
+                <MudTooltip Text="Ubah order"><MudIconButton Icon="@Icons.Material.Outlined.Edit" Color="Color.Default" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/orders/{context.Id}"))" /></MudTooltip>
             </MudStack>
         </MudTd>
     </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new[] { 5, 10, 25 }" />
+    </PagerContent>
 </MudTable>
 </MudPaper>
 

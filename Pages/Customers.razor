@@ -6,13 +6,17 @@
 
 <PageTitle>Customers</PageTitle>
 
-<MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Customers</MudText>
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4" Wrap="Wrap.Wrap">
+    <MudStack Spacing="0">
+        <MudText Typo="Typo.h4" Class="font-weight-bold">Customers</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">Daftar pelanggan dan riwayat order</MudText>
+    </MudStack>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowAddDialog" StartIcon="@Icons.Material.Filled.Add" Class="px-5">
+        Tambah Customer
+    </MudButton>
+</MudStack>
 
-<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowAddDialog" StartIcon="@Icons.Material.Filled.Add">
-    Tambah Customer
-</MudButton>
-
-<MudTextField @bind-Value="_searchTerm" Label="Cari nama / WA" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mt-4" Immediate="true" />
+<MudTextField @bind-Value="_searchTerm" Label="Cari nama / WA" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="mb-4" Style="max-width:320px" Immediate="true" Variant="Variant.Outlined" />
 
 <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden mt-4">
 <MudTable Items="@_filteredCustomers" Hover="true" Dense="true">
@@ -27,10 +31,15 @@
         <MudTd DataLabel="WhatsApp">@context.WhatsAppNumber</MudTd>
         <MudTd DataLabel="Jumlah Order" Class="d-none d-sm-table-cell">@context.Orders.Count</MudTd>
         <MudTd DataLabel="Aksi">
-            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" OnClick="@(() => ViewCustomer(context.Id))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info" OnClick="@(() => EditCustomer(context))" />
+            <MudStack Row="true" Spacing="1" Class="flex-nowrap">
+                <MudTooltip Text="Lihat customer"><MudIconButton Icon="@Icons.Material.Outlined.Visibility" Color="Color.Primary" Size="Size.Small" OnClick="@(() => ViewCustomer(context.Id))" /></MudTooltip>
+                <MudTooltip Text="Ubah customer"><MudIconButton Icon="@Icons.Material.Outlined.Edit" Color="Color.Info" Size="Size.Small" OnClick="@(() => EditCustomer(context))" /></MudTooltip>
+            </MudStack>
         </MudTd>
     </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new[] { 5, 10, 25 }" />
+    </PagerContent>
 </MudTable>
 </MudPaper>
 

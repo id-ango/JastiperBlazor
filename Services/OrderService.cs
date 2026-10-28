@@ -79,6 +79,17 @@ public class OrderService
         }
     }
 
+    public async Task SetSupplierBatchAsync(int orderId, int? batchId)
+    {
+        var order = await _db.Orders.FindAsync(orderId);
+        if (order != null)
+        {
+            order.SupplierBatchId = batchId;
+            order.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+        }
+    }
+
     public async Task RecordDPAsync(int orderId, decimal amount, DateTime date)
     {
         var order = await _db.Orders.FindAsync(orderId);

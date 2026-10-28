@@ -2,6 +2,7 @@
 @using JastiperBlazor.Models
 @using JastiperBlazor.Services
 @inject OrderService OrderService
+@inject SupplierBatchService BatchService
 
 <PageTitle>Barang Dipesan Supplier</PageTitle>
 
@@ -35,7 +36,14 @@
         <MudTd DataLabel="Tgl Sampai" Class="d-none d-md-table-cell">
             <MudDatePicker Date="context.ArrivedDate" DateChanged="@(d => ChangeArrivalAsync(context, d))" Editable="true" Dense="true" Variant="Variant.Outlined" />
         </MudTd>
-        <MudTd DataLabel="Supplier Batch" Class="d-none d-sm-table-cell">@(context.Order.SupplierBatch?.Name ?? "-")</MudTd>
+        <MudTd DataLabel="Supplier Batch" Class="d-none d-sm-table-cell" Style="min-width:180px">
+            <MudSelect T="int?" Value="context.Order.SupplierBatchId" ValueChanged="@(v => ChangeBatchAsync(context, v))" Dense="true" Variant="Variant.Outlined" Placeholder="Pilih batch" Clearable="true">
+                @foreach (var b in _batches)
+                {
+                    <MudSelectItem T="int?" Value="b.Id">@b.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudTd>
         <MudTd DataLabel="Produk">@context.ProductName</MudTd>
         <MudTd DataLabel="Customer">@context.Order.Customer.Name</MudTd>
         <MudTd DataLabel="Order #" Class="d-none d-lg-table-cell">#@context.OrderId</MudTd>
@@ -53,6 +61,7 @@
 
 @code {
     private List<OrderItem> _items = new();
+    private List<SupplierBatch> _batches = new();
     private string? _batchFilter;
 
     private IEnumerable<string> _batchNames => _items
@@ -68,11 +77,18 @@
     protected override async Task OnInitializedAsync()
     {
         _items = await OrderService.GetSupplierItemsAsync();
+        _batches = await BatchService.GetAllAsync();
     }
 
     private async Task ChangeArrivalAsync(OrderItem item, DateTime? arrivedDate)
     {
         await OrderService.SetItemArrivalAsync(item.Id, arrivedDate);
+        _items = await OrderService.GetSupplierItemsAsync();
+    }
+
+    private async Task ChangeBatchAsync(OrderItem item, int? batchId)
+    {
+        await OrderService.SetSupplierBatchAsync(item.OrderId, batchId);
         _items = await OrderService.GetSupplierItemsAsync();
     }
 }

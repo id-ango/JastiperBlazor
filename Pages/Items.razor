@@ -9,7 +9,7 @@
 <MudText Typo="Typo.h4" Class="font-weight-bold mb-4">Daftar Item</MudText>
 <MudText Typo="Typo.body2" Class="mb-4">Nama barang yang pernah diinput. Klik edit untuk memperbaiki nama yang salah (akan mengubah semua order yang memakai nama tersebut).</MudText>
 
-<MudTextField @bind-Value="_search" Label="Cari nama item" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="mb-4" />
+<MudTextField @bind-Value="_search" Label="Cari nama item" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="mb-4" Style="max-width:320px" Variant="Variant.Outlined" />
 
 <MudPaper Elevation="0" Outlined="true" Class="rounded-lg overflow-hidden">
 <MudTable Items="@FilteredItems" Hover="true" Dense="true">
@@ -22,9 +22,12 @@
         <MudTd DataLabel="Nama Item">@context</MudTd>
         <MudTd DataLabel="Jumlah Pemakaian">@_usageCounts.GetValueOrDefault(context, 0)</MudTd>
         <MudTd DataLabel="Aksi">
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => Rename(context))" />
+            <MudTooltip Text="Ubah nama"><MudIconButton Icon="@Icons.Material.Outlined.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => Rename(context))" /></MudTooltip>
         </MudTd>
     </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new[] { 10, 25, 50 }" />
+    </PagerContent>
 </MudTable>
 </MudPaper>
 
